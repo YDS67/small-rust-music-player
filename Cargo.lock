@@ -162,15 +162,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bfbf56724aa9eca8afa4fcfadeb479e722935bb2a0900c2d37e0cc477af0688"
 
 [[package]]
-name = "cli-audio-player"
-version = "0.1.0"
-dependencies = [
- "image",
- "miniquad",
- "rodio",
-]
-
-[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -363,6 +354,15 @@ name = "glob"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
+
+[[package]]
+name = "gui-audio-player"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "miniquad",
+ "rodio",
+]
 
 [[package]]
 name = "half"
