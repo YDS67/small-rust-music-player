@@ -1,4 +1,3 @@
-use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use std::fs;
 use rodio::Source; 
@@ -7,7 +6,7 @@ use crate::settings;
 
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
-    let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
+    let (_stream, handle) = rodio::OutputStream::try_default().expect("Can't open output stream (Rodio)");
     let sink = rodio::Sink::try_new(&handle).expect("Can't create Rodio Sink");
 
     loop {
@@ -20,9 +19,9 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
             let dir_name = track_name(&pstr);
             s_player.dir_name = dir_name;
             drop(s_player);
+            let pstr = format!("{}", path.display());
             let file = std::fs::File::open(path).expect("Can't open file");
-            let res = rodio::Decoder::new(BufReader::new(file));
-            
+            let res = rodio::Decoder::new(file);
 
             match res {
                 Ok(buff) => {
@@ -54,7 +53,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                     }
                 },
                 Err(_) => {
-                    println!("Can't decode file {}", track_name(&pstr))
+                    //println!("Can't decode file {}", track_name(&pstr))
                 }
             }
         }
