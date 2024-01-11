@@ -1,9 +1,8 @@
 use image::{self, ImageBuffer, Rgba};
-use std::path::Path;
 
-use crate::settings;
+const DEF_IMAGE_SIZE: u32 = 256;
 
-const DEF_IMAGE_SIZE: u32 = settings::MAPSIZE as u32;
+const MONOSPACE: &[u8] = include_bytes!("../assets/monospace.png");
 
 pub struct Ass {
     pub font: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -17,23 +16,14 @@ impl Ass {
             *pixel.2 = image::Rgba([255,255,255,255]);
         }
 
-        let mut images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>> = Vec::new();
-
-        let paths: Vec<&str> = vec![
-            "assets/monospace.png",
-        ];
-
-        for path in paths {
-            let image_result = image::open(Path::new(path));
-            let image = match image_result {
-                Ok(image_result) => image_result.to_rgba8(),
-                Err(_image_result) => img.clone()
-            };
-            images.push(image)
-        }
+        let image_result = image::load_from_memory_with_format(MONOSPACE, image::ImageFormat::Png);
+        let image = match image_result {
+            Ok(image_result) => image_result.to_rgba8(),
+            Err(_image_result) => img.clone()
+        };
 
         Ass {
-            font: images[0].clone(),
+            font: image,
         }
     }
 }
