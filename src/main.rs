@@ -31,6 +31,7 @@ fn window_conf() -> Conf {
 pub struct State {
     pub play: bool,
     pub skip: bool,
+    pub dir_name: String,
     pub file_num: usize,
     pub file_name: String,
     pub message: String,
@@ -41,6 +42,7 @@ fn main() {
         play: true,
         skip: false,
         file_num: 0,
+        dir_name: format!("Directory not found"),
         file_name: format!("File not found"),
         message: format!("***"),
     };

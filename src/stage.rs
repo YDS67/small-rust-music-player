@@ -257,11 +257,14 @@ impl Stage {
             &s_display.message,
         ]);
         self.gui = text::GUI::new_from(vec![
+            &format!("Current directory"),
+            &s_display.dir_name,
             &format!("Now playing track ({})", s_display.file_num),
             &s_display.file_name,
         ], self.settings.screen_width_f, self.settings.screen_height_f);
         drop(s_display);
         self.gui.line_active[1] = 1;
+        self.gui.line_active[3] = 1;
     }
 }
 

@@ -7,23 +7,31 @@ use crate::settings;
 
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
-
     let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
+    let sink = rodio::Sink::try_new(&handle).expect("Can't create Rodio Sink");
 
     loop {
         let mut counter = 0;
-        for entry in fs::read_dir(current_dir.clone()).unwrap() {
-            let path = entry.unwrap().path();
-            let pstr = format!("{}", path.display());
-            let file = std::fs::File::open(path).unwrap();
+        let entries = fs::read_dir(current_dir.clone()).expect("ReadDir error");
+        for entry in entries {
+            let path = entry.expect("Reading entry path error").path();
+            let pstr = format!("{}", current_dir.display());
+            let mut s_player = state_player.lock().unwrap();
+            let dir_name = track_name(&pstr);
+            s_player.dir_name = dir_name;
+            drop(s_player);
+            let file = std::fs::File::open(path).expect("Can't open file");
             let res = rodio::Decoder::new(BufReader::new(file));
-            let sink = rodio::Sink::try_new(&handle).unwrap();
+            
 
             match res {
                 Ok(buff) => {
                     counter += 1;
                     let buffc = buff.buffered();
                     sink.append(buffc);
+                    if sink.empty() {
+                        println!("Couldn't append track to sink")
+                    }
                     while !sink.empty() {
                         let mut s_player = state_player.lock().unwrap();
                         s_player.file_num = counter;
@@ -45,7 +53,9 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                         std::thread::sleep(std::time::Duration::from_secs_f64(settings::FT_DESIRED));
                     }
                 },
-                Err(_) => {}
+                Err(_) => {
+                    println!("Can't decode file {}", track_name(&pstr))
+                }
             }
         }
     }
