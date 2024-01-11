@@ -20,41 +20,42 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
             s_player.dir_name = dir_name;
             drop(s_player);
             let pstr = format!("{}", path.display());
-            let file = std::fs::File::open(path).expect("Can't open file");
-            let res = rodio::Decoder::new(file);
+            let file_open = std::fs::File::open(path);
+            match file_open {
+                Ok(file) => {
+                    let res = rodio::Decoder::new(file);
 
-            match res {
-                Ok(buff) => {
-                    counter += 1;
-                    let buffc = buff.buffered();
-                    sink.append(buffc);
-                    if sink.empty() {
-                        println!("Couldn't append track to sink")
-                    }
-                    while !sink.empty() {
-                        let mut s_player = state_player.lock().unwrap();
-                        s_player.file_num = counter;
-                        let file_name = track_name(&pstr);
-                        s_player.file_name = file_name;
+                    match res {
+                        Ok(buff) => {
+                            counter += 1;
+                            let buffc = buff.buffered();
+                            sink.append(buffc);
         
-                        if s_player.play {
-                            sink.play();
-                            if s_player.skip {
-                                s_player.skip = false;
-                                sink.skip_one();
-                                break;
+                            while !sink.empty() {
+                                let mut s_player = state_player.lock().unwrap();
+                                s_player.file_num = counter;
+                                let file_name = track_name(&pstr);
+                                s_player.file_name = file_name;
+                
+                                if s_player.play {
+                                    sink.play();
+                                    if s_player.skip {
+                                        s_player.skip = false;
+                                        sink.skip_one();
+                                        break;
+                                    }
+                                } else {
+                                    sink.pause();
+                                }
+                                drop(s_player);
+                
+                                std::thread::sleep(std::time::Duration::from_secs_f64(settings::FT_DESIRED));
                             }
-                        } else {
-                            sink.pause();
-                        }
-                        drop(s_player);
-        
-                        std::thread::sleep(std::time::Duration::from_secs_f64(settings::FT_DESIRED));
+                        },
+                        Err(_) => {}
                     }
-                },
-                Err(_) => {
-                    //println!("Can't decode file {}", track_name(&pstr))
                 }
+                Err(_) => {}
             }
         }
     }
