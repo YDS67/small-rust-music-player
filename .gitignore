@@ -19,3 +19,4 @@ Cargo.lock
 *.wav
 *.png~
 >>>>>>> Stashed changes
+*.exe

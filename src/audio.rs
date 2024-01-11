@@ -6,15 +6,15 @@ use rodio::Source;
 use crate::settings;
 
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
-    let current_dir = ".";
+    let current_dir = std::env::current_dir().expect("Can't find current directory");
 
     let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
 
     loop {
         let mut counter = 0;
-        for entry in fs::read_dir(current_dir).unwrap() {
+        for entry in fs::read_dir(current_dir.clone()).unwrap() {
             let path = entry.unwrap().path();
-            let pstr = path.clone().into_os_string().into_string().unwrap();
+            let pstr = format!("{}", path.display());
             let file = std::fs::File::open(path).unwrap();
             let res = rodio::Decoder::new(BufReader::new(file));
             let sink = rodio::Sink::try_new(&handle).unwrap();
