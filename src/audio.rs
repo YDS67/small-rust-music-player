@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use std::fs;
-use rodio::Source; 
+use rodio::Source;
 
 use crate::settings;
 

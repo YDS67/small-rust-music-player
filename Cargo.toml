@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 image = "0.24.7"
 miniquad = { version = "=0.4.0-alpha.10", features = ["log-impl"] }
-rodio = "0.17.3"
+rodio = { version = "0.17.3", features = ["symphonia"] }
