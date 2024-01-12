@@ -80,7 +80,7 @@ impl GUI {
         let scale = 1.0;
         let line_height = HEIGHT*scale;
         let x0 = width*0.5;
-        let y0 = (height - (lines.len() as f32 - 1.0)*line_height)*0.7/scale;
+        let y0 = (height - (lines.len() as f32 - 1.0)*line_height)*0.66/scale;
         let mut lines1 = Vec::new();
         let mut line_width = Vec::new();
         let mut line_x = Vec::new();
