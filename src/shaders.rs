@@ -38,8 +38,7 @@ uniform vec4 actcolor;
 
 out vec2 texcoord;
 out vec4 cols;
-
-vec2 posxy;
+out vec2 posxy;
 
 void main() {
     posxy = vec2((pos.x-0.5)*2.0, (0.5-pos.y)*2.0);
@@ -51,6 +50,7 @@ void main() {
 pub const FRAGMENT_GUI: &str = r#"#version 330 core
 in vec2 texcoord;
 in vec4 cols;
+in vec2 posxy;
 
 out vec4 FragColor;
 
@@ -61,6 +61,7 @@ vec4 col;
 void main() {
     col = texture(tex, texcoord);
     FragColor = vec4(col.xyz+(1-col.xyz)*cols.xyz,col.w);
+    
 }"#;
 
 pub const VERTEX_SCREEN: &str = r#"#version 330 core

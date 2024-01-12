@@ -66,7 +66,7 @@ fn track_name(text: &String) -> String {
     let text1: Vec<&str> = text.split(|c| c == '/' || c == '\\').collect();
     let letters: Vec<char> = text1[text1.len()-1].chars().collect();
     let mut new: String = String::new();
-    for i in 0..(letters.len()).min(30) {
+    for i in 0..(letters.len()).min(40) {
         new.push(letters[i]);
     }
     new
