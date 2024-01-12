@@ -11,6 +11,15 @@ pub const MAX_INDICES_OVERLAY: usize = MAX_QUADS_OVERLAY*6;
 pub const MAX_QUADS_GUI: usize = 1000;
 pub const MAX_VERTICES_GUI: usize = MAX_QUADS_GUI*4;
 pub const MAX_INDICES_GUI: usize = MAX_QUADS_GUI*6;
+pub const CLR1: (f32, f32, f32, f32) = (0.5294118, 0.8078431, 0.9215686, 1.0000000); // sky blue
+pub const CLR2: (f32, f32, f32, f32) = (0.14117647, 0.07843137, 0.13333333, 1.0); // dark purple
+pub const CLR3: (f32, f32, f32, f32) = (0.8, 0.0, 0.2, 1.0); // nice red
+pub const CLR4: (f32, f32, f32, f32) = (0.1568627, 0.1568627, 0.1568627, 1.0); // almost black
+pub const CLR5: (f32, f32, f32, f32) = (0.9960784, 0.7607843, 0.5568627, 1.0); // pale yellow
+pub const CLR6: (f32, f32, f32, f32) = (0.1843137, 0.2666667, 0.4627451, 1.0000000); // gray-blue
+pub const CLR7: (f32, f32, f32, f32) = (0.0, 0.2745098, 0.6666667, 1.0000000); // blue
+pub const CLR8: (f32, f32, f32, f32) = (0.85, 0.85, 0.85, 1.0000000); // almost white
+pub const CLR9: (f32, f32, f32, f32) = (0.5105882, 0.5600000, 0.6776471, 1.0000000); // pale blue
 
 pub struct Settings {
     pub screen_width: i32,

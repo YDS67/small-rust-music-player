@@ -1,4 +1,4 @@
-use crate::mesh::TextureUV;
+use crate::{mesh::TextureUV, settings};
 use std::char;
 
 pub const WIDTH: f32 = 12.0;
@@ -48,7 +48,7 @@ impl Overlay {
             line_width,
             line_x,
             line_y,
-            font_col: (0.14117647, 0.07843137, 0.13333333, 1.0),
+            font_col: settings::CLR8,
             x0,
             y0,
             scale,
@@ -101,8 +101,8 @@ impl GUI {
             line_x,
             line_y,
             line_active,
-            font_col: (0.14117647, 0.07843137, 0.13333333, 1.0),
-            act_col: (0.8, 0.0, 0.2, 1.0),
+            font_col: settings::CLR2,
+            act_col: settings::CLR6,
             act_no: 0,
             x0,
             y0,

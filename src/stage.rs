@@ -252,8 +252,8 @@ impl Stage {
         let s_display = self.state.lock().unwrap();
         self.overlay = text::Overlay::new_from(vec![
             //&format!("FPS: {}.", self.time_state.fps + 1),
-            &format!("-Space- to pause or play."),
-            &format!("-S- to skip, -Esc- to exit."),
+            &format!("<Space> to pause or continue."),
+            &format!("<S> to skip, <Esc> to exit."),
             &s_display.message,
         ]);
         self.gui = text::GUI::new_from(vec![
@@ -287,9 +287,9 @@ impl EventHandler for Stage {
             let mut s_main = self.state.lock().unwrap();
             if s_main.play {
                 s_main.skip = true;
-                s_main.message = format!("track skipped")
+                s_main.message = format!("*** track skipped")
             } else {
-                s_main.message = format!("unpause to skip")
+                s_main.message = format!("*** unpause to skip")
             }
             drop(s_main);
             self.input_state.apply_change = false;
@@ -298,7 +298,7 @@ impl EventHandler for Stage {
         if self.input_state.keys.space && self.input_state.apply_change {
             let mut s_main = self.state.lock().unwrap();
             s_main.play = !s_main.play;
-            s_main.message = format!("paused: {}", !s_main.play);
+            s_main.message = format!("*** paused: {}", !s_main.play);
             drop(s_main);
             self.input_state.apply_change = false;
         }
@@ -337,7 +337,7 @@ impl EventHandler for Stage {
         self.ctx.end_render_pass();
 
         self.ctx
-            .begin_pass(Some(self.render_pass), PassAction::clear_color(0.5294118, 0.8078431, 0.9215686, 1.0000000));
+            .begin_pass(Some(self.render_pass), PassAction::clear_color(settings::CLR4.0, settings::CLR4.1, settings::CLR4.2, 1.0));
 
         for j in 0..2 {
             self.ctx.buffer_update(self.bindings[j].vertex_buffers[0], BufferSource::slice(&self.mesh[j].vertices));
