@@ -34,6 +34,7 @@ pub struct State {
     pub dir_name: String,
     pub file_num: usize,
     pub file_name: String,
+    pub file_ext: String,
     pub message: String,
 }
 
@@ -44,6 +45,7 @@ fn main() {
         file_num: 0,
         dir_name: format!("Directory not found"),
         file_name: format!("File not found"),
+        file_ext: format!("Unknown"),
         message: format!("***"),
     };
 

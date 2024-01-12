@@ -261,6 +261,7 @@ impl Stage {
             &s_display.dir_name,
             &format!("Now playing track <{}>", s_display.file_num),
             &s_display.file_name,
+            &format!("Format <{}>", s_display.file_ext),
         ], self.settings.screen_width_f, self.settings.screen_height_f);
         drop(s_display);
         self.gui.line_active[1] = 1;
