@@ -273,6 +273,8 @@ fn char_to_uv(c: char) -> TextureUV {
         ')' => tex = TextureUV{u1: X1+16.0*WIDTH, u2: X1+17.0*WIDTH, v1: Y5, v2: Y5+HEIGHT},
         ';' => tex = TextureUV{u1: X1+17.0*WIDTH, u2: X1+18.0*WIDTH, v1: Y5, v2: Y5+HEIGHT},
         '■' => tex = TextureUV{u1: X1+18.0*WIDTH+1.0, u2: X1+19.0*WIDTH-1.0, v1: 88.0, v2: 98.0},
+        '[' => tex = TextureUV{u1: X1+19.0*WIDTH, u2: X1+20.0*WIDTH, v1: Y5, v2: Y5+HEIGHT},
+        ']' => tex = TextureUV{u1: X1+20.0*WIDTH, u2: X1+21.0*WIDTH, v1: Y5, v2: Y5+HEIGHT},
         '+' => tex = TextureUV{u1: X1+13.0*WIDTH, u2: X1+14.0*WIDTH, v1: Y6, v2: Y6+HEIGHT},
         '&' => tex = TextureUV{u1: X1+14.0*WIDTH, u2: X1+15.0*WIDTH, v1: Y6, v2: Y6+HEIGHT},
         '_' => tex = TextureUV{u1: X1+15.0*WIDTH, u2: X1+16.0*WIDTH, v1: Y6, v2: Y6+HEIGHT},

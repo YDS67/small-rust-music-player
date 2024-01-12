@@ -252,14 +252,14 @@ impl Stage {
         let s_display = self.state.lock().unwrap();
         self.overlay = text::Overlay::new_from(vec![
             //&format!("FPS: {}.", self.time_state.fps + 1),
-            &format!("<Space> to pause or continue."),
-            &format!("<S> to skip, <Esc> to exit."),
+            &format!("[Space] to pause or continue."),
+            &format!("[S] to skip, [Esc] to exit."),
             &s_display.message,
         ]);
         self.gui = text::GUI::new_from(vec![
             &format!("Current directory"),
             &s_display.dir_name,
-            &format!("Now playing track ({})", s_display.file_num),
+            &format!("Now playing track <{}>", s_display.file_num),
             &s_display.file_name,
         ], self.settings.screen_width_f, self.settings.screen_height_f);
         drop(s_display);
