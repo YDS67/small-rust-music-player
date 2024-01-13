@@ -1,5 +1,6 @@
 use crate::text;
 use crate::settings;
+#[allow(unused_imports)]
 use lowpass_filter::lowpass_filter;
 
 #[repr(C)]
@@ -270,19 +271,25 @@ impl Mesh {
 
         let mut snorm: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
 
+        for l in 0..settings::SAMPLES {
+            snorm[l] = stats[l].abs() as f32 / smax_f
+        }
+
+        //lowpass_filter(&mut snorm, settings::SAMPLES as f32, 16.0);
+
+        let mut snorm2: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+
         for l in 0..(settings::AVERAGE_FREQ-1) {
             for k in 0..settings::AVERAGE_FREQ {
-                snorm[l] += stats[settings::SAMPLES-k-1].abs() as f32 / smax_f / settings::AVERAGE_FREQ as f32
+                snorm2[l] += snorm[if l as i32 - k as i32 > 0 {l-k} else {settings::SAMPLES-1 + l-k}].abs()/ settings::AVERAGE_FREQ as f32
             }
         }
 
         for l in (settings::AVERAGE_FREQ-1)..settings::SAMPLES {
             for k in 0..settings::AVERAGE_FREQ {
-                snorm[l] += stats[l-k].abs() as f32 / smax_f / settings::AVERAGE_FREQ as f32
+                snorm2[l] += snorm[l-k].abs() / settings::AVERAGE_FREQ as f32
             }
         }
-
-        lowpass_filter(&mut snorm, settings::SAMPLES as f32, 30.0);
 
         let dx: f32 = 1.0/settings::SAMPLES as f32;
 
@@ -292,12 +299,12 @@ impl Mesh {
             tex_uv = TextureUV {
                 u1: lf,
                 u2: lf,
-                v1: snorm[l],
-                v2: snorm[l],
+                v1: snorm2[l],
+                v2: snorm2[l],
             };
 
             let x = lf+dx-0.5;
-            let y = snorm[l] - 0.5;
+            let y = snorm2[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {
@@ -327,7 +334,7 @@ impl Mesh {
                 act: 0.0,
             }); // bottom left
             let x = lf-0.5;
-            let y = snorm[l] - 0.5;
+            let y = snorm2[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {

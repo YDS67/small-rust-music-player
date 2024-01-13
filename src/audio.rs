@@ -9,8 +9,6 @@ use std::sync::mpsc::{self, Sender, Receiver};
 
 use crate::settings;
 
-const RATE: f64 = 1.0/30.0;
-
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
     let (_stream, handle) = rodio::OutputStream::try_default().expect("Can't open output stream (Rodio)");
@@ -40,7 +38,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                             counter += 1;
                             let tx2 = tx.clone();
                             let buffc = buff.periodic_access(
-                                std::time::Duration::from_secs_f64(RATE), 
+                                std::time::Duration::from_secs_f64(settings::SAMPLING_TIME), 
                                 move |s| {
                                     tx2.send(s.stats).unwrap()
                                 });
@@ -70,7 +68,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                 }
                                 drop(s_player);
                 
-                                std::thread::sleep(std::time::Duration::from_secs_f64(RATE));
+                                std::thread::sleep(std::time::Duration::from_secs_f64(settings::SAMPLING_TIME));
                             }
                         },
                         Err(_) => {}

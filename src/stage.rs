@@ -24,6 +24,7 @@ pub struct Stage {
     time_state: TimeState,
     input_state: InputState,
     counter: usize,
+    other_counter: f64,
     visuals: [[i16; settings::SAMPLES]; settings::AVERAGE_TIME],
 }
 
@@ -290,6 +291,7 @@ impl Stage {
             time_state: TimeState::init(),
             input_state: InputState::init(),
             counter: 0,
+            other_counter: 0.0,
             visuals: [[0; settings::SAMPLES]; settings::AVERAGE_TIME],
         }
     }
@@ -374,11 +376,17 @@ impl EventHandler for Stage {
         
         drop(s_display);
 
-        self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
+        self.other_counter += 1.0;
+
+        if self.other_counter > settings::SAMPLING_TIME/settings::FT_DESIRED {
+            self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
+            self.other_counter = 0.0
+        }
 
         self.counter += 1;
 
         if self.counter > settings::AVERAGE_TIME-1 {
+            self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
             self.counter = 0
         }
         
