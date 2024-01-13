@@ -347,8 +347,7 @@ impl Mesh {
         }
     }
 
-    pub fn new_screen(
-    ) -> Mesh {
+    pub fn new_screen(asp: f32) -> Mesh {
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut indices: Vec<i16> = Vec::new();
 
@@ -359,7 +358,7 @@ impl Mesh {
             v2: 0.0,
         };
 
-        let x = 1.0;
+        let x = 1.0/asp;
         let y = 1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -369,7 +368,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // top right
-        let x = 1.0;
+        let x = 1.0/asp;
         let y = -1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -379,7 +378,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // bottom right
-        let x = -1.0;
+        let x = -1.0/asp;
         let y = -1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -389,7 +388,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // bottom left
-        let x = -1.0;
+        let x = -1.0/asp;
         let y = 1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },

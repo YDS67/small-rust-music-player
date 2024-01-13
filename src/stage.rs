@@ -51,7 +51,7 @@ impl Stage {
 
         let mesh_visuals = mesh::Mesh::new_visuals(&[0; settings::SAMPLES]);
 
-        let mesh_screen = mesh::Mesh::new_screen();
+        let mesh_screen = mesh::Mesh::new_screen(1.0);
 
         let vertex_buffer_overlay = ctx.new_buffer(
             BufferType::VertexBuffer,
@@ -108,7 +108,7 @@ impl Stage {
             kind: TextureKind::Texture2D,
             format: TextureFormat::RGBA8,
             wrap: TextureWrap::Clamp,
-            min_filter: FilterMode::Nearest,
+            min_filter: FilterMode::Linear,
             mag_filter: FilterMode::Nearest,
             mipmap_filter: MipmapFilterMode::None,
             width: dims.0,
@@ -123,7 +123,7 @@ impl Stage {
             format: TextureFormat::RGBA8,
             wrap: TextureWrap::Clamp,
             min_filter: FilterMode::Linear,
-            mag_filter: FilterMode::Linear,
+            mag_filter: FilterMode::Nearest,
             mipmap_filter: MipmapFilterMode::None,
             width: settings::WIDTH,
             height: settings::HEIGHT,
@@ -254,8 +254,14 @@ impl Stage {
             depth_test: Comparison::Always,
             depth_write: false,      
             depth_write_offset: None,
-            color_blend: None,
-            alpha_blend: None,
+            color_blend: Some(BlendState::new(
+                Equation::Add,
+                BlendFactor::Value(BlendValue::SourceAlpha),
+                BlendFactor::OneMinusValue(BlendValue::SourceAlpha))
+            ),
+            alpha_blend: Some(BlendState::new(Equation::Add, 
+                BlendFactor::Value(BlendValue::SourceAlpha), 
+                BlendFactor::OneMinusValue(BlendValue::SourceAlpha))),
             stencil_test: None,
             color_write: (true, true, true, true),
             primitive_type: PrimitiveType::Triangles,
@@ -310,7 +316,7 @@ impl Stage {
             &format!("Now playing track <{}>", s_display.file_num),
             &s_display.file_name,
             &format!("Format <{}>", s_display.file_ext),
-        ], self.settings.screen_width_f, self.settings.screen_height_f);
+        ], settings::WIDTH as f32, settings::HEIGHT as f32);
         drop(s_display);
         self.gui.line_active[1] = 1;
         self.gui.line_active[3] = 1;
@@ -354,14 +360,16 @@ impl EventHandler for Stage {
         
         self.mesh[0] = mesh::Mesh::new_overlay(
             &self.overlay,
-            1.0 / self.settings.screen_width_f,
-            1.0 / self.settings.screen_height_f,
+            1.0 / settings::WIDTH as f32,
+            1.0 / settings::HEIGHT as f32,
         );
         self.mesh[1] = mesh::Mesh::new_gui(
             &self.gui,
-            1.0 / self.settings.screen_width_f,
-            1.0 / self.settings.screen_height_f,
+            1.0 / settings::WIDTH as f32,
+            1.0 / settings::HEIGHT as f32,
         );
+
+        self.mesh[3] = mesh::Mesh::new_screen(self.settings.screen_width_f/self.settings.screen_height_f);
 
         let s_display = self.state.lock().unwrap();
 
@@ -399,7 +407,7 @@ impl EventHandler for Stage {
 
     fn draw(&mut self) {
 
-        self.ctx.begin_default_pass(PassAction::default());
+        self.ctx.begin_default_pass(PassAction::clear_color(settings::CLR4.0, settings::CLR4.1, settings::CLR4.2, 1.0));
 
         self.ctx.apply_pipeline(&self.pipeline[3]);
 
@@ -416,7 +424,7 @@ impl EventHandler for Stage {
         self.ctx
             .begin_pass(Some(self.render_pass), PassAction::clear_color(settings::CLR4.0, settings::CLR4.1, settings::CLR4.2, 1.0));
 
-        for j in 0..3 {
+        for j in 0..4 {
             self.ctx.buffer_update(self.bindings[j].vertex_buffers[0], BufferSource::slice(&self.mesh[j].vertices));
             self.ctx.buffer_update(self.bindings[j].index_buffer, BufferSource::slice(&self.mesh[j].indices));
         }

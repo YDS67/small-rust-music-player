@@ -18,7 +18,7 @@ fn window_conf() -> Conf {
         window_title: "Player".to_owned(),
         window_width: settings::WIDTH0,
         window_height: settings::HEIGHT0,
-        window_resizable: false,
+        window_resizable: true,
         platform: Platform::default(),
         ..Default::default()
     };
