@@ -1,7 +1,7 @@
-pub const WIDTH0: i32 = 500;
-pub const HEIGHT0: i32 = 500;
-pub const WIDTH: u32 = 500;
-pub const HEIGHT: u32 = 500;
+pub const WIDTH0: i32 = 512;
+pub const HEIGHT0: i32 = 512;
+pub const WIDTH: u32 = 512;
+pub const HEIGHT: u32 = 512;
 pub const FT_DESIRED: f64 = 1.0/120.0;
 pub const SAMPLING_TIME: f64 = 1.0/20.0;
 pub const MAX_QUADS_OVERLAY: usize = 1000;
