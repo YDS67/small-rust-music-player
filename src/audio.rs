@@ -12,8 +12,8 @@ use crate::settings;
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
     let (_stream, handle) = rodio::OutputStream::try_default().expect("Can't open output stream (Rodio)");
-    let sink = rodio::Sink::try_new(&handle).expect("Can't create Rodio Sink");
     let (tx, rx): (Sender<[i16; settings::SAMPLES]>, Receiver<[i16; settings::SAMPLES]>) = mpsc::channel();
+    let sink = rodio::Sink::try_new(&handle).expect("Can't create Rodio Sink");
 
     loop {
         let mut counter = 0;
@@ -53,6 +53,8 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                 if sink.empty() {
                                     s_player.sample_stats = [0; settings::SAMPLES];
                                     drop(s_player);
+                                    sink.clear();
+                                    sink.stop();
                                     break;
                                 }
                 
@@ -66,8 +68,9 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                     if s_player.skip {
                                         s_player.skip = false;
                                         s_player.sample_stats = [0; settings::SAMPLES];
-                                        sink.skip_one();
                                         drop(s_player);
+                                        sink.clear();
+                                        sink.stop();
                                         break;
                                     }
                                 } else {
