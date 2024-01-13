@@ -259,14 +259,6 @@ impl Mesh {
 
         let mut tex_uv;
 
-        // let mut smax: i16 = 1;
-
-        // for l in 0..settings::SAMPLES {
-        //     if stats[l].abs() > smax {
-        //         smax = stats[l].abs()
-        //     }
-        // }
-
         let smax_f = 32767 as f32;
 
         let mut snorm: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
@@ -277,30 +269,22 @@ impl Mesh {
 
         lowpass_filter(&mut snorm, settings::SAMPLES as f32, 16.0);
 
-        let mut snorm1: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+        let mut snorm2: [f32; settings::BINS] = [0.0; settings::BINS];
 
-        for l in 0..(settings::SAMPLES/2) {
-            for k in 0..settings::AVERAGE_FREQ {
-                snorm1[l] += snorm[l+k].abs()/ settings::AVERAGE_FREQ as f32
+        
+
+        for l in 0..settings::BINS {
+            for k in 0..settings::BIN_SAMPLES {
+                snorm2[l] += snorm[settings::BIN_SAMPLES*l+k] / settings::BIN_SAMPLES as f32;
             }
         }
 
-        for l in (settings::SAMPLES/2)..settings::SAMPLES {
-            for k in 0..settings::AVERAGE_FREQ {
-                snorm1[l] += snorm[l-k].abs() / settings::AVERAGE_FREQ as f32
-            }
-        }
+        let x0: f32 = 0.1/settings::BINS as f32;
 
-        let mut snorm2: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+        let dx: f32 = 0.8/settings::BINS as f32;
 
-        for l in 0..settings::SAMPLES {
-            snorm2[l] = 0.5*(snorm1[l] + snorm1[settings::SAMPLES-1-l])
-        }
-
-        let dx: f32 = 1.0/settings::SAMPLES as f32;
-
-        for l in 0..settings::SAMPLES {
-            let lf = l as f32 / settings::SAMPLES as f32;
+        for l in 0..settings::BINS {
+            let lf = l as f32 / settings::BINS as f32;
 
             tex_uv = TextureUV {
                 u1: lf,
@@ -309,7 +293,7 @@ impl Mesh {
                 v2: snorm2[l],
             };
 
-            let x = lf+dx-0.5;
+            let x = lf+dx-0.5 + x0;
             let y = snorm2[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
@@ -319,7 +303,7 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // top right
-            let x = lf+dx-0.5;
+            let x = lf+dx-0.5 + x0;
             let y = -0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
@@ -329,7 +313,7 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // bottom right
-            let x = lf-0.5;
+            let x = lf-0.5 + x0;
             let y = -0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
@@ -339,7 +323,7 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // bottom left
-            let x = lf-0.5;
+            let x = lf-0.5 + x0;
             let y = snorm2[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
