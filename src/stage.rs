@@ -23,6 +23,8 @@ pub struct Stage {
 
     time_state: TimeState,
     input_state: InputState,
+    counter: usize,
+    visuals: [[i16; settings::SAMPLES]; settings::AVERAGE_TIME],
 }
 
 impl Stage {
@@ -45,12 +47,21 @@ impl Stage {
             1.0 / settings.screen_width_f,
             1.0 / settings.screen_height_f,
         );
+
+        let mesh_visuals = mesh::Mesh::new_visuals(&[0; settings::SAMPLES]);
+
         let mesh_screen = mesh::Mesh::new_screen();
 
         let vertex_buffer_overlay = ctx.new_buffer(
             BufferType::VertexBuffer,
             BufferUsage::Stream,
             BufferSource::empty::<mesh::Vertex>(settings::MAX_VERTICES_OVERLAY),
+        );
+
+        let vertex_buffer_visuals = ctx.new_buffer(
+            BufferType::VertexBuffer,
+            BufferUsage::Stream,
+            BufferSource::empty::<mesh::Vertex>(settings::MAX_VERTICES_VISUALS),
         );
 
         let vertex_buffer_gui = ctx.new_buffer(
@@ -68,13 +79,19 @@ impl Stage {
         let index_buffer_overlay = ctx.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Stream,
-            BufferSource::empty::<i16>(2*settings::MAX_INDICES_OVERLAY),
+            BufferSource::empty::<i16>(settings::MAX_INDICES_OVERLAY),
+        );
+
+        let index_buffer_visuals = ctx.new_buffer(
+            BufferType::IndexBuffer,
+            BufferUsage::Stream,
+            BufferSource::empty::<i16>(settings::MAX_INDICES_VISUALS),
         );
 
         let index_buffer_gui = ctx.new_buffer(
             BufferType::IndexBuffer,
             BufferUsage::Stream,
-            BufferSource::empty::<i16>(2*settings::MAX_INDICES_GUI),
+            BufferSource::empty::<i16>(settings::MAX_INDICES_GUI),
         );
 
         let index_buffer_screen = ctx.new_buffer(
@@ -120,6 +137,12 @@ impl Stage {
             images: vec![texture_overlay],
         };
 
+        let bindings_visuals = Bindings {
+            vertex_buffers: vec![vertex_buffer_visuals],
+            index_buffer: index_buffer_visuals,
+            images: vec![],
+        };
+
         let bindings_gui = Bindings {
             vertex_buffers: vec![vertex_buffer_gui],
             index_buffer: index_buffer_gui,
@@ -139,6 +162,16 @@ impl Stage {
                     fragment: shaders::FRAGMENT_OVERLAY,
                 },
                 shaders::meta_overlay(),
+            )
+            .unwrap();
+
+        let shader_visuals = ctx
+            .new_shader(
+                miniquad::ShaderSource::Glsl {
+                    vertex: shaders::VERTEX_VISUALS,
+                    fragment: shaders::FRAGMENT_VISUALS,
+                },
+                shaders::meta_visuals(),
             )
             .unwrap();
 
@@ -192,6 +225,17 @@ impl Stage {
             p_params,
         );
 
+        let pipeline_visuals = ctx.new_pipeline_with_params(
+            &[BufferLayout::default()],
+            &[
+                VertexAttribute::new("pos", VertexFormat::Float3),
+                VertexAttribute::new("uv", VertexFormat::Float2),
+                VertexAttribute::new("act", VertexFormat::Float1),
+            ],
+            shader_visuals,
+            p_params,
+        );
+
         let pipeline_gui = ctx.new_pipeline_with_params(
             &[BufferLayout::default()],
             &[
@@ -237,14 +281,16 @@ impl Stage {
             settings,
             overlay: text::Overlay::new_from(vec!["Text default"]),
             gui,
-            pipeline: vec![pipeline_overlay, pipeline_gui, pipeline_screen],
-            bindings: vec![bindings_overlay, bindings_gui, bindings_screen],
-            mesh: vec![mesh_overlay, mesh_gui, mesh_screen],
+            pipeline: vec![pipeline_overlay, pipeline_gui, pipeline_visuals, pipeline_screen],
+            bindings: vec![bindings_overlay, bindings_gui, bindings_visuals, bindings_screen],
+            mesh: vec![mesh_overlay, mesh_gui, mesh_visuals, mesh_screen],
             render_pass,
             state,
 
             time_state: TimeState::init(),
             input_state: InputState::init(),
+            counter: 0,
+            visuals: [[0; settings::SAMPLES]; settings::AVERAGE_TIME],
         }
     }
 
@@ -314,6 +360,28 @@ impl EventHandler for Stage {
             1.0 / self.settings.screen_width_f,
             1.0 / self.settings.screen_height_f,
         );
+
+        let s_display = self.state.lock().unwrap();
+
+        let mut average_visuals = [0i16; settings::SAMPLES];
+
+        for l in 0..settings::SAMPLES {
+            self.visuals[self.counter][l] = s_display.sample_stats[l];
+            for k in 0..settings::AVERAGE_TIME {
+                average_visuals[l] += self.visuals[k][l];
+            }
+        }
+        
+        drop(s_display);
+
+        self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
+
+        self.counter += 1;
+
+        if self.counter > settings::AVERAGE_TIME-1 {
+            self.counter = 0
+        }
+        
     }
 
     // ============================
@@ -321,26 +389,25 @@ impl EventHandler for Stage {
     // ============================
 
     fn draw(&mut self) {
-        window::show_mouse(self.gui.show);
 
         self.ctx.begin_default_pass(PassAction::default());
 
-        self.ctx.apply_pipeline(&self.pipeline[2]);
+        self.ctx.apply_pipeline(&self.pipeline[3]);
 
-        self.ctx.apply_bindings(&self.bindings[2]);
+        self.ctx.apply_bindings(&self.bindings[3]);
 
         self.ctx
             .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsScreen {
             }));
 
-        self.ctx.draw(0, self.mesh[2].num * 6, 1);
+        self.ctx.draw(0, self.mesh[3].num * 6, 1);
 
         self.ctx.end_render_pass();
 
         self.ctx
             .begin_pass(Some(self.render_pass), PassAction::clear_color(settings::CLR4.0, settings::CLR4.1, settings::CLR4.2, 1.0));
 
-        for j in 0..2 {
+        for j in 0..3 {
             self.ctx.buffer_update(self.bindings[j].vertex_buffers[0], BufferSource::slice(&self.mesh[j].vertices));
             self.ctx.buffer_update(self.bindings[j].index_buffer, BufferSource::slice(&self.mesh[j].indices));
         }
@@ -356,19 +423,28 @@ impl EventHandler for Stage {
 
         self.ctx.draw(0, self.mesh[0].num * 6, 1);
 
-        if self.gui.show {
-            self.ctx.apply_pipeline(&self.pipeline[1]);
+        self.ctx.apply_pipeline(&self.pipeline[1]);
 
-            self.ctx.apply_bindings(&self.bindings[1]);
-    
-            self.ctx
-                .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsGUI {
-                    fontcolor: self.gui.font_col,
-                    actcolor: self.gui.act_col,
-                }));
-    
-            self.ctx.draw(0, self.mesh[1].num * 6, 1);    
-        }
+        self.ctx.apply_bindings(&self.bindings[1]);
+
+        self.ctx
+            .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsGUI {
+                fontcolor: self.gui.font_col,
+                actcolor: self.gui.act_col,
+            }));
+
+        self.ctx.draw(0, self.mesh[1].num * 6, 1); 
+
+        self.ctx.apply_pipeline(&self.pipeline[2]);
+
+        self.ctx.apply_bindings(&self.bindings[2]);
+
+        self.ctx
+            .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsVisuals {
+                fontcolor: settings::CLR8,
+            }));
+
+        self.ctx.draw(0, self.mesh[2].num * 6, 1); 
         
         self.ctx.end_render_pass();
 

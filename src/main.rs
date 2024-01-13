@@ -22,7 +22,7 @@ fn window_conf() -> Conf {
         platform: Platform::default(),
         ..Default::default()
     };
-    conf.platform.swap_interval = Some(0);
+    conf.platform.swap_interval = Some(-1);
     conf
 }
 
@@ -36,6 +36,7 @@ pub struct State {
     pub file_name: String,
     pub file_ext: String,
     pub message: String,
+    pub sample_stats: [i16; settings::SAMPLES],
 }
 
 fn main() {
@@ -47,6 +48,7 @@ fn main() {
         file_name: format!("File not found"),
         file_ext: format!("Unknown"),
         message: format!("***"),
+        sample_stats: [0; settings::SAMPLES],
     };
 
     let state = Arc::new(Mutex::new(state));

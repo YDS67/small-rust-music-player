@@ -1,4 +1,6 @@
 use crate::text;
+use crate::settings;
+use lowpass_filter::lowpass_filter;
 
 #[repr(C)]
 struct Vec2 {
@@ -6,10 +8,10 @@ struct Vec2 {
     y: f32,
 }
 #[repr(C)]
-struct Vec3 {
-    x: f32,
-    y: f32,
-    z: f32,
+pub struct Vec3 {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 // #[repr(C)]
@@ -39,7 +41,7 @@ impl TextureUV {
 
 #[repr(C)]
 pub struct Vertex {
-    pos: Vec3,
+    pub pos: Vec3,
     uv: Vec2,
     act: f32,
 }
@@ -240,6 +242,109 @@ impl Mesh {
 
                 idx = idx + 1;
             }
+        }
+
+        Mesh {
+            vertices,
+            indices,
+            num: idx as i32,
+        }
+    }
+
+    pub fn new_visuals(stats: &[i16; settings::SAMPLES]) -> Mesh {
+        let mut vertices: Vec<Vertex> = Vec::new();
+        let mut indices: Vec<i16> = Vec::new();
+        let mut idx = 0;
+
+        let mut tex_uv;
+
+        let mut smax: i16 = 1;
+
+        for l in 0..settings::SAMPLES {
+            if stats[l].abs() > smax {
+                smax = stats[l].abs()
+            }
+        }
+
+        let smax_f = smax as f32;
+
+        let mut snorm: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+
+        for l in 0..(settings::AVERAGE_FREQ-1) {
+            for k in 0..settings::AVERAGE_FREQ {
+                snorm[l] += stats[settings::SAMPLES-k-1].abs() as f32 / smax_f / settings::AVERAGE_FREQ as f32
+            }
+        }
+
+        for l in (settings::AVERAGE_FREQ-1)..settings::SAMPLES {
+            for k in 0..settings::AVERAGE_FREQ {
+                snorm[l] += stats[l-k].abs() as f32 / smax_f / settings::AVERAGE_FREQ as f32
+            }
+        }
+
+        lowpass_filter(&mut snorm, settings::SAMPLES as f32, 30.0);
+
+        let dx: f32 = 1.0/settings::SAMPLES as f32;
+
+        for l in 0..settings::SAMPLES {
+            let lf = l as f32 / settings::SAMPLES as f32;
+
+            tex_uv = TextureUV {
+                u1: lf,
+                u2: lf,
+                v1: snorm[l],
+                v2: snorm[l],
+            };
+
+            let x = 1.0 - 2.0*(lf+dx);
+            let y = snorm[l] - 1.0;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u2,
+                    y: tex_uv.v1,
+                },
+                act: 0.0,
+            }); // top right
+            let x = 1.0 - 2.0*(lf+dx);
+            let y = -1.0;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u2,
+                    y: tex_uv.v2,
+                },
+                act: 0.0,
+            }); // bottom right
+            let x = 1.0 - 2.0*lf;
+            let y = -1.0;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u1,
+                    y: tex_uv.v2,
+                },
+                act: 0.0,
+            }); // bottom left
+            let x = 1.0 - 2.0*lf;
+            let y = snorm[l] - 1.0;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u1,
+                    y: tex_uv.v1,
+                },
+                act: 0.0,
+            }); // top left
+
+            indices.push(4 * idx + 0);
+            indices.push(4 * idx + 1);
+            indices.push(4 * idx + 2);
+            indices.push(4 * idx + 2);
+            indices.push(4 * idx + 3);
+            indices.push(4 * idx + 0);
+
+            idx = idx + 1;
         }
 
         Mesh {

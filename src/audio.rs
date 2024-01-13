@@ -1,13 +1,19 @@
 use std::sync::{Arc, Mutex};
 use std::fs;
-use rodio::Source;
+use std::io::{Read, Seek};
+use std::marker::Sync;
+use std::time::Duration;
+use rodio::decoder::{Decoder, DecoderError};
+use rodio::source::Source;
+use std::sync::mpsc::{self, Sender, Receiver};
 
-use crate::settings;
+use crate::settings::{self, FT_DESIRED};
 
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
     let (_stream, handle) = rodio::OutputStream::try_default().expect("Can't open output stream (Rodio)");
     let sink = rodio::Sink::try_new(&handle).expect("Can't create Rodio Sink");
+    let (tx, rx): (Sender<[i16; settings::SAMPLES]>, Receiver<[i16; settings::SAMPLES]>) = mpsc::channel();
 
     loop {
         let mut counter = 0;
@@ -25,20 +31,18 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
             let file_open = std::fs::File::open(path);
             match file_open {
                 Ok(file) => {
-                    let res = match ext {
-                        MusicFormat::MP3 => rodio::Decoder::new_mp3(file),
-                        MusicFormat::WAV => rodio::Decoder::new_wav(file),
-                        MusicFormat::OGG => rodio::Decoder::new_vorbis(file),
-                        MusicFormat::FLAC => rodio::Decoder::new_flac(file),
-                        _ => rodio::Decoder::new(file),
-                    };
+                    let res = SpyDecoder::new(file, ext);
 
                     match res {
                         Ok(buff) => {
                             counter += 1;
-                            let buffc = buff.buffered();
+                            let tx2 = tx.clone();
+                            let buffc = buff.periodic_access(
+                                std::time::Duration::from_secs_f64(FT_DESIRED), 
+                                move |s| {
+                                    tx2.send(s.stats).unwrap()
+                                });
                             sink.append(buffc);
-        
                             while !sink.empty() {
                                 let mut s_player = state_player.lock().unwrap();
                                 s_player.file_num = counter;
@@ -48,6 +52,11 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                 
                                 if s_player.play {
                                     sink.play();
+                                    let send_sample = rx.try_recv();
+                                    match send_sample {
+                                        Ok(stats) => s_player.sample_stats = stats,
+                                        Err(_) => {}
+                                    }
                                     if s_player.skip {
                                         s_player.skip = false;
                                         sink.skip_one();
@@ -116,7 +125,7 @@ fn track_format(text: &String) -> MusicFormat {
     answ
 }
 
-enum MusicFormat {
+pub enum MusicFormat {
     MP3,
     WAV,
     OGG,
@@ -133,5 +142,90 @@ impl MusicFormat {
             Self::FLAC => "flac".to_string(),
             _ => "unknown".to_string(),
         }
+    }
+}
+
+pub struct SpyDecoder<R> where R: Read + Seek
+{
+    inner: Decoder<R>,
+    stats: [i16; settings::SAMPLES],
+    stats_index: usize,
+    stats_wait: usize,
+    stats_wait_index: usize,
+    stats_collect: bool,
+}
+
+impl<R> SpyDecoder<R>
+    where
+        R: Read + Seek + Send + Sync + 'static,
+{
+    pub fn new(file: R, ext: MusicFormat) -> Result<SpyDecoder<R>, DecoderError> {
+        let inner = match ext {
+            MusicFormat::MP3 => Decoder::new_mp3(file),
+            MusicFormat::WAV => Decoder::new_wav(file),
+            MusicFormat::OGG => Decoder::new_vorbis(file),
+            MusicFormat::FLAC => Decoder::new_flac(file),
+            _ => Decoder::new(file),
+        }?;
+        Ok(Self {
+            inner,
+            stats: [0; settings::SAMPLES],
+            stats_index: 0,
+            stats_wait: 44000 / 10,
+            stats_wait_index: 0,
+            stats_collect: false,
+        })
+    }
+}
+
+impl<R> Iterator for SpyDecoder<R>
+    where R: Read + Seek {
+    type Item = i16;
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        let sample = self.inner.next();
+        if self.stats_collect {
+            if self.stats_index < settings::SAMPLES {
+                if sample.is_some() {
+                    self.stats[self.stats_index] = sample.unwrap();
+                    self.stats_index += 1;
+                }
+            } else {
+                self.stats_collect = false;
+                self.stats_index = 0;
+                // Use the stats (try_send to a channel for stats computation, etc)
+            }
+        } else {
+            if self.stats_wait_index < self.stats_wait {
+                self.stats_wait_index += 1;
+            } else {
+                self.stats_collect = true;
+                self.stats_wait_index = 0;
+            }
+        }
+        sample
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
+impl<R> Source for SpyDecoder<R>
+    where R: Read + Seek {
+    fn current_frame_len(&self) -> Option<usize> {
+        self.inner.current_frame_len()
+    }
+
+    fn channels(&self) -> u16 {
+        self.inner.channels()
+    }
+
+    fn sample_rate(&self) -> u32 {
+        self.inner.sample_rate()
+    }
+
+    fn total_duration(&self) -> Option<Duration> {
+        self.inner.total_duration()
     }
 }

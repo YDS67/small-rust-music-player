@@ -64,6 +64,29 @@ void main() {
     
 }"#;
 
+pub const VERTEX_VISUALS: &str = r#"#version 330 core
+in vec3 pos;
+in vec2 uv;
+in float act;
+
+out vec2 texcoord;
+
+void main() {
+    texcoord = vec2(-pos.y, uv.y);
+    gl_Position = vec4(pos, 1.0);
+}"#;
+
+pub const FRAGMENT_VISUALS: &str = r#"#version 330 core
+in vec2 texcoord;
+
+out vec4 FragColor;
+
+uniform vec4 fontcolor;
+
+void main() {
+    FragColor = fontcolor*vec4(texcoord.x, 0.5*texcoord.x, texcoord.y, 1.0);
+}"#;
+
 pub const VERTEX_SCREEN: &str = r#"#version 330 core
 in vec3 pos;
 in vec2 uv;
@@ -90,6 +113,17 @@ void main() {
 pub fn meta_overlay() -> ShaderMeta {
     ShaderMeta {
         images: vec!["tex".to_string()],
+        uniforms: UniformBlockLayout {
+            uniforms: vec![
+                UniformDesc::new("fontcolor", UniformType::Float4),
+            ],
+        },
+    }
+}
+
+pub fn meta_visuals() -> ShaderMeta {
+    ShaderMeta {
+        images: vec![],
         uniforms: UniformBlockLayout {
             uniforms: vec![
                 UniformDesc::new("fontcolor", UniformType::Float4),
@@ -129,6 +163,11 @@ pub struct UniformsOverlay {
 pub struct UniformsGUI {
     pub fontcolor: (f32, f32, f32, f32),
     pub actcolor: (f32, f32, f32, f32),
+}
+
+#[repr(C)]
+pub struct UniformsVisuals {
+    pub fontcolor: (f32, f32, f32, f32),
 }
 
 #[repr(C)]
