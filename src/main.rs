@@ -57,8 +57,4 @@ fn main() {
     thread::spawn(|| audio::playback(state_player));
 
     miniquad::start(window_conf(), move || {Box::new(stage::Stage::new(state))});
-
-    //let s_display = state.lock().unwrap();
-    //&format!("Now playing track [{}] {}\n", s_display.file_num, s_display.file_name)
-    //drop(s_display);
 }

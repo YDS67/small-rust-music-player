@@ -1,7 +1,5 @@
 use crate::text;
 use crate::settings;
-#[allow(unused_imports)]
-use lowpass_filter::lowpass_filter;
 
 #[repr(C)]
 struct Vec2 {
@@ -266,8 +264,6 @@ impl Mesh {
         for l in 0..settings::SAMPLES {
             snorm[l] = stats[l].abs() as f32 / smax_f
         }
-
-        //lowpass_filter(&mut snorm, settings::SAMPLES as f32, 16.0);
 
         let mut snorm2: [f32; settings::BINS] = [0.0; settings::BINS];
 

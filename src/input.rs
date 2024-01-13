@@ -19,7 +19,7 @@ impl TimeState {
         }
     }
 
-    pub fn frame_time(&mut self, settings: &mut settings::Settings) {
+    pub fn frame_time(&mut self) {
         self.frame_time = date::now() - self.last_frame;
         if self.frame_time < settings::FT_DESIRED {
             sleep(Duration::from_secs_f64(
@@ -27,10 +27,8 @@ impl TimeState {
             ));
         }
         self.frame_time = date::now() - self.last_frame;
-        settings.delta_time = self.frame_time as f32;
         self.fps = (1. / self.frame_time).floor() as i32;
 
-        settings.player_speed = 12.0 * settings.delta_time;
     }
 }
 

@@ -156,6 +156,12 @@ impl MusicFormat {
     }
 }
 
+//=============================
+// The following sampling solution is proposed by
+// https://github.com/jmbarbier at https://github.com/RustAudio/rodio/issues/475
+// I have made some changes to use with my own code
+//=============================
+
 pub struct SpyDecoder<R> where R: Read + Seek
 {
     inner: Decoder<R>,
