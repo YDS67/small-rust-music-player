@@ -258,15 +258,15 @@ impl Mesh {
 
         let mut tex_uv;
 
-        let mut smax: i16 = 1;
+        // let mut smax: i16 = 1;
 
-        for l in 0..settings::SAMPLES {
-            if stats[l].abs() > smax {
-                smax = stats[l].abs()
-            }
-        }
+        // for l in 0..settings::SAMPLES {
+        //     if stats[l].abs() > smax {
+        //         smax = stats[l].abs()
+        //     }
+        // }
 
-        let smax_f = smax as f32;
+        let smax_f = 32767 as f32;
 
         let mut snorm: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
 
