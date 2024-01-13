@@ -275,7 +275,7 @@ impl Mesh {
             snorm[l] = stats[l].abs() as f32 / smax_f
         }
 
-        //lowpass_filter(&mut snorm, 44100.0, 120.0);
+        lowpass_filter(&mut snorm, settings::SAMPLES as f32, 16.0);
 
         let mut snorm1: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
 
