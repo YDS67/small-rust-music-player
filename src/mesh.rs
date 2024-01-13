@@ -296,8 +296,8 @@ impl Mesh {
                 v2: snorm[l],
             };
 
-            let x = 1.0 - 2.0*(lf+dx);
-            let y = snorm[l] - 1.0;
+            let x = lf+dx-0.5;
+            let y = snorm[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {
@@ -306,8 +306,8 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // top right
-            let x = 1.0 - 2.0*(lf+dx);
-            let y = -1.0;
+            let x = lf+dx-0.5;
+            let y = -0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {
@@ -316,8 +316,8 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // bottom right
-            let x = 1.0 - 2.0*lf;
-            let y = -1.0;
+            let x = lf-0.5;
+            let y = -0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {
@@ -326,8 +326,8 @@ impl Mesh {
                 },
                 act: 0.0,
             }); // bottom left
-            let x = 1.0 - 2.0*lf;
-            let y = snorm[l] - 1.0;
+            let x = lf-0.5;
+            let y = snorm[l] - 0.5;
             vertices.push(Vertex {
                 pos: Vec3 { x, y, z: 0.0 },
                 uv: Vec2 {

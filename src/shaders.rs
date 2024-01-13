@@ -72,8 +72,8 @@ in float act;
 out vec2 texcoord;
 
 void main() {
-    texcoord = vec2(-pos.y, uv.y);
-    gl_Position = vec4(pos, 1.0);
+    texcoord = vec2(-2.0*pos.y, uv.y);
+    gl_Position = vec4(2.0*pos, 1.0);
 }"#;
 
 pub const FRAGMENT_VISUALS: &str = r#"#version 330 core
@@ -84,7 +84,7 @@ out vec4 FragColor;
 uniform vec4 fontcolor;
 
 void main() {
-    FragColor = fontcolor*vec4(texcoord.x, 0.5*texcoord.x, texcoord.y, 1.0);
+    FragColor = fontcolor*vec4(texcoord.x, 0.5*texcoord.x, 1.0-texcoord.x, texcoord.x);
 }"#;
 
 pub const VERTEX_SCREEN: &str = r#"#version 330 core

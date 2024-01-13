@@ -412,6 +412,18 @@ impl EventHandler for Stage {
             self.ctx.buffer_update(self.bindings[j].index_buffer, BufferSource::slice(&self.mesh[j].indices));
         }
 
+        self.ctx.apply_pipeline(&self.pipeline[2]);
+
+        self.ctx.apply_bindings(&self.bindings[2]);
+
+        self.ctx
+            .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsVisuals {
+                fontcolor: settings::CLR8,
+            }));
+
+        self.ctx.draw(0, self.mesh[2].num * 6, 1); 
+        
+
         self.ctx.apply_pipeline(&self.pipeline[0]);
 
         self.ctx.apply_bindings(&self.bindings[0]);
@@ -435,17 +447,6 @@ impl EventHandler for Stage {
 
         self.ctx.draw(0, self.mesh[1].num * 6, 1); 
 
-        self.ctx.apply_pipeline(&self.pipeline[2]);
-
-        self.ctx.apply_bindings(&self.bindings[2]);
-
-        self.ctx
-            .apply_uniforms(miniquad::UniformsSource::table(&shaders::UniformsVisuals {
-                fontcolor: settings::CLR8,
-            }));
-
-        self.ctx.draw(0, self.mesh[2].num * 6, 1); 
-        
         self.ctx.end_render_pass();
 
         self.ctx.commit_frame();
