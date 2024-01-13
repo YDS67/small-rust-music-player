@@ -43,12 +43,18 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                     tx2.send(s.stats).unwrap()
                                 });
                             sink.append(buffc);
-                            while !sink.empty() {
+                            loop {
                                 let mut s_player = state_player.lock().unwrap();
                                 s_player.file_num = counter;
                                 let file_name = track_name(&pstr);
                                 s_player.file_name = file_name;
                                 s_player.file_ext = ext_text.clone();
+
+                                if sink.empty() {
+                                    s_player.sample_stats = [0; settings::SAMPLES];
+                                    drop(s_player);
+                                    break;
+                                }
                 
                                 if s_player.play {
                                     sink.play();
@@ -61,6 +67,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                         s_player.skip = false;
                                         s_player.sample_stats = [0; settings::SAMPLES];
                                         sink.skip_one();
+                                        drop(s_player);
                                         break;
                                     }
                                 } else {

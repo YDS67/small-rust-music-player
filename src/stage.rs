@@ -379,9 +379,10 @@ impl EventHandler for Stage {
         self.other_counter += 1.0;
 
         if self.other_counter > settings::SAMPLING_TIME/settings::FT_DESIRED {
-            self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
             self.other_counter = 0.0
         }
+
+        self.mesh[2] = mesh::Mesh::new_visuals(&average_visuals);
 
         self.counter += 1;
 

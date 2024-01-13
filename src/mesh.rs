@@ -275,20 +275,26 @@ impl Mesh {
             snorm[l] = stats[l].abs() as f32 / smax_f
         }
 
-        //lowpass_filter(&mut snorm, settings::SAMPLES as f32, 16.0);
+        //lowpass_filter(&mut snorm, 44100.0, 120.0);
 
-        let mut snorm2: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+        let mut snorm1: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
 
-        for l in 0..(settings::AVERAGE_FREQ-1) {
+        for l in 0..(settings::SAMPLES/2) {
             for k in 0..settings::AVERAGE_FREQ {
-                snorm2[l] += snorm[if l as i32 - k as i32 > 0 {l-k} else {settings::SAMPLES-1 + l-k}].abs()/ settings::AVERAGE_FREQ as f32
+                snorm1[l] += snorm[l+k].abs()/ settings::AVERAGE_FREQ as f32
             }
         }
 
-        for l in (settings::AVERAGE_FREQ-1)..settings::SAMPLES {
+        for l in (settings::SAMPLES/2)..settings::SAMPLES {
             for k in 0..settings::AVERAGE_FREQ {
-                snorm2[l] += snorm[l-k].abs() / settings::AVERAGE_FREQ as f32
+                snorm1[l] += snorm[l-k].abs() / settings::AVERAGE_FREQ as f32
             }
+        }
+
+        let mut snorm2: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+
+        for l in 0..settings::SAMPLES {
+            snorm2[l] = 0.5*(snorm1[l] + snorm1[settings::SAMPLES-1-l])
         }
 
         let dx: f32 = 1.0/settings::SAMPLES as f32;
