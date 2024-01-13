@@ -18,11 +18,11 @@ fn window_conf() -> Conf {
         window_title: "Player".to_owned(),
         window_width: settings::WIDTH0,
         window_height: settings::HEIGHT0,
-        window_resizable: false,
+        window_resizable: true,
         platform: Platform::default(),
         ..Default::default()
     };
-    conf.platform.swap_interval = Some(0);
+    conf.platform.swap_interval = Some(1);
     conf
 }
 
@@ -36,6 +36,7 @@ pub struct State {
     pub file_name: String,
     pub file_ext: String,
     pub message: String,
+    pub sample_stats: [i16; settings::SAMPLES],
 }
 
 fn main() {
@@ -47,6 +48,7 @@ fn main() {
         file_name: format!("File not found"),
         file_ext: format!("Unknown"),
         message: format!("***"),
+        sample_stats: [0; settings::SAMPLES],
     };
 
     let state = Arc::new(Mutex::new(state));
@@ -55,8 +57,4 @@ fn main() {
     thread::spawn(|| audio::playback(state_player));
 
     miniquad::start(window_conf(), move || {Box::new(stage::Stage::new(state))});
-
-    //let s_display = state.lock().unwrap();
-    //&format!("Now playing track [{}] {}\n", s_display.file_num, s_display.file_name)
-    //drop(s_display);
 }

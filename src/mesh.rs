@@ -1,4 +1,5 @@
 use crate::text;
+use crate::settings;
 
 #[repr(C)]
 struct Vec2 {
@@ -6,10 +7,10 @@ struct Vec2 {
     y: f32,
 }
 #[repr(C)]
-struct Vec3 {
-    x: f32,
-    y: f32,
-    z: f32,
+pub struct Vec3 {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 // #[repr(C)]
@@ -39,7 +40,7 @@ impl TextureUV {
 
 #[repr(C)]
 pub struct Vertex {
-    pos: Vec3,
+    pub pos: Vec3,
     uv: Vec2,
     act: f32,
 }
@@ -249,8 +250,104 @@ impl Mesh {
         }
     }
 
-    pub fn new_screen(
-    ) -> Mesh {
+    pub fn new_visuals(stats: &[i16; settings::SAMPLES]) -> Mesh {
+        let mut vertices: Vec<Vertex> = Vec::new();
+        let mut indices: Vec<i16> = Vec::new();
+        let mut idx = 0;
+
+        let mut tex_uv;
+
+        let smax_f = 32767 as f32;
+
+        let mut snorm: [f32; settings::SAMPLES] = [0.0; settings::SAMPLES];
+
+        for l in 0..settings::SAMPLES {
+            snorm[l] = stats[l].abs() as f32 / smax_f
+        }
+
+        let mut snorm2: [f32; settings::BINS] = [0.0; settings::BINS];
+
+        
+
+        for l in 0..settings::BINS {
+            for k in 0..settings::BIN_SAMPLES {
+                snorm2[l] += snorm[settings::BIN_SAMPLES*l+k] / settings::BIN_SAMPLES as f32;
+            }
+        }
+
+        let x0: f32 = 0.1/settings::BINS as f32;
+
+        let dx: f32 = 0.8/settings::BINS as f32;
+
+        for l in 0..settings::BINS {
+            let lf = l as f32 / settings::BINS as f32;
+
+            tex_uv = TextureUV {
+                u1: lf,
+                u2: lf,
+                v1: snorm2[l],
+                v2: snorm2[l],
+            };
+
+            let x = lf+dx-0.5 + x0;
+            let y = snorm2[l] - 0.5;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u2,
+                    y: tex_uv.v1,
+                },
+                act: 0.0,
+            }); // top right
+            let x = lf+dx-0.5 + x0;
+            let y = -0.5;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u2,
+                    y: tex_uv.v2,
+                },
+                act: 0.0,
+            }); // bottom right
+            let x = lf-0.5 + x0;
+            let y = -0.5;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u1,
+                    y: tex_uv.v2,
+                },
+                act: 0.0,
+            }); // bottom left
+            let x = lf-0.5 + x0;
+            let y = snorm2[l] - 0.5;
+            vertices.push(Vertex {
+                pos: Vec3 { x, y, z: 0.0 },
+                uv: Vec2 {
+                    x: tex_uv.u1,
+                    y: tex_uv.v1,
+                },
+                act: 0.0,
+            }); // top left
+
+            indices.push(4 * idx + 0);
+            indices.push(4 * idx + 1);
+            indices.push(4 * idx + 2);
+            indices.push(4 * idx + 2);
+            indices.push(4 * idx + 3);
+            indices.push(4 * idx + 0);
+
+            idx = idx + 1;
+        }
+
+        Mesh {
+            vertices,
+            indices,
+            num: idx as i32,
+        }
+    }
+
+    pub fn new_screen(asp: f32) -> Mesh {
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut indices: Vec<i16> = Vec::new();
 
@@ -261,7 +358,7 @@ impl Mesh {
             v2: 0.0,
         };
 
-        let x = 1.0;
+        let x = 1.0/asp;
         let y = 1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -271,7 +368,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // top right
-        let x = 1.0;
+        let x = 1.0/asp;
         let y = -1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -281,7 +378,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // bottom right
-        let x = -1.0;
+        let x = -1.0/asp;
         let y = -1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
@@ -291,7 +388,7 @@ impl Mesh {
             },
             act: 0.0,
         }); // bottom left
-        let x = -1.0;
+        let x = -1.0/asp;
         let y = 1.0;
         vertices.push(Vertex {
             pos: Vec3 { x, y, z: 0.0 },
