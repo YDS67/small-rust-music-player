@@ -297,7 +297,7 @@ impl Stage {
     fn show_gui(&mut self) {
         let s_display = self.state.lock().unwrap();
         self.overlay = text::Overlay::new_from(vec![
-            //&format!("FPS: {}.", self.time_state.fps + 1),
+            &format!("FPS: {}.", self.time_state.fps + 1),
             &format!("[Space] to pause or continue."),
             &format!("[S] to skip, [Esc] to exit."),
             &s_display.message,

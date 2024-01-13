@@ -7,7 +7,9 @@ use rodio::decoder::{Decoder, DecoderError};
 use rodio::source::Source;
 use std::sync::mpsc::{self, Sender, Receiver};
 
-use crate::settings::{self, FT_DESIRED};
+use crate::settings;
+
+const RATE: f64 = 1.0/30.0;
 
 pub fn playback(state_player: Arc<Mutex<crate::State>>) {
     let current_dir = std::env::current_dir().expect("Can't find current directory");
@@ -38,7 +40,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                             counter += 1;
                             let tx2 = tx.clone();
                             let buffc = buff.periodic_access(
-                                std::time::Duration::from_secs_f64(FT_DESIRED), 
+                                std::time::Duration::from_secs_f64(RATE), 
                                 move |s| {
                                     tx2.send(s.stats).unwrap()
                                 });
@@ -59,6 +61,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                     }
                                     if s_player.skip {
                                         s_player.skip = false;
+                                        s_player.sample_stats = [0; settings::SAMPLES];
                                         sink.skip_one();
                                         break;
                                     }
@@ -67,7 +70,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                 }
                                 drop(s_player);
                 
-                                std::thread::sleep(std::time::Duration::from_secs_f64(settings::FT_DESIRED));
+                                std::thread::sleep(std::time::Duration::from_secs_f64(RATE));
                             }
                         },
                         Err(_) => {}
