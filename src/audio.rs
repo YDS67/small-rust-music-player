@@ -78,7 +78,7 @@ pub fn playback(state_player: Arc<Mutex<crate::State>>) {
                                 }
                                 drop(s_player);
                 
-                                std::thread::sleep(std::time::Duration::from_secs_f64(settings::SAMPLING_TIME));
+                                std::thread::sleep(std::time::Duration::from_secs_f64(settings::FT_DESIRED));
                             }
                         },
                         Err(_) => {}
