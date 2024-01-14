@@ -31,6 +31,7 @@ fn window_conf() -> Conf {
 pub struct State {
     pub play: bool,
     pub skip: bool,
+    pub repeat: bool,
     pub dir_name: String,
     pub file_num: usize,
     pub file_name: String,
@@ -43,6 +44,7 @@ fn main() {
     let state = State {
         play: true,
         skip: false,
+        repeat: false,
         file_num: 0,
         dir_name: format!("Directory not found"),
         file_name: format!("File not found"),
