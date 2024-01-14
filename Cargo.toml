@@ -5,7 +5,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+panic = "abort"
+trim-paths = "all"
+
 [dependencies]
 image = "0.24.7"
 miniquad = { version = "=0.4.0-alpha.10", features = ["log-impl"] }
-rodio = { version = "0.17.3", features = ["symphonia"] }
+rodio = { version = "0.17.3", features = ["symphonia-mp3", "symphonia-wav", "symphonia-flac", "vorbis"] }
