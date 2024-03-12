@@ -10,7 +10,6 @@ strip = true  # Automatically strip symbols from the binary.
 opt-level = "z"  # Optimize for size.
 lto = true
 panic = "abort"
-trim-paths = "all"
 
 [dependencies]
 image = "0.24.7"
