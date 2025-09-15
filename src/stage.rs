@@ -111,6 +111,7 @@ impl Stage {
             min_filter: FilterMode::Linear,
             mag_filter: FilterMode::Nearest,
             mipmap_filter: MipmapFilterMode::None,
+            sample_count: 1,
             width: dims.0,
             height: dims.1,
             allocate_mipmaps: false,
@@ -125,6 +126,7 @@ impl Stage {
             min_filter: FilterMode::Linear,
             mag_filter: FilterMode::Nearest,
             mipmap_filter: MipmapFilterMode::None,
+            sample_count: 1,
             width: settings::WIDTH,
             height: settings::HEIGHT,
             allocate_mipmaps: false,
@@ -215,7 +217,7 @@ impl Stage {
             primitive_type: PrimitiveType::Triangles,
         };
 
-        let pipeline_overlay = ctx.new_pipeline_with_params(
+        let pipeline_overlay = ctx.new_pipeline(
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("pos", VertexFormat::Float3),
@@ -226,7 +228,7 @@ impl Stage {
             p_params,
         );
 
-        let pipeline_visuals = ctx.new_pipeline_with_params(
+        let pipeline_visuals = ctx.new_pipeline(
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("pos", VertexFormat::Float3),
@@ -237,7 +239,7 @@ impl Stage {
             p_params,
         );
 
-        let pipeline_gui = ctx.new_pipeline_with_params(
+        let pipeline_gui = ctx.new_pipeline(
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("pos", VertexFormat::Float3),
@@ -267,7 +269,7 @@ impl Stage {
             primitive_type: PrimitiveType::Triangles,
         };
 
-        let pipeline_screen = ctx.new_pipeline_with_params(
+        let pipeline_screen = ctx.new_pipeline(
             &[BufferLayout::default()],
             &[
                 VertexAttribute::new("pos", VertexFormat::Float3),
